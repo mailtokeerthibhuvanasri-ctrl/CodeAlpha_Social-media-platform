@@ -1,62 +1,50 @@
-# CodeAlpha_Social-media-platform
-Threadly is a full-featured social media web application designed to bring people together. Share updates, engage in threaded conversations, explore trending topics, and connect with communities in a fast, responsive, and intuitive interface.
-# 🧵 Threadly
+# Threadly — mini social media app
 
-A mini social media app — profiles, posts, comments, likes, follows, and a Pinterest-style **Discover** feed that recommends posts based on your interests.
+A tiny social platform: profiles, posts, comments, likes, and follows.
+Backend: FastAPI + SQLite (one file, no server setup needed).
+Frontend: plain HTML/CSS/JS — no build step.
 
-Built with **FastAPI** (Python) + **SQLite** on the backend, and plain **HTML/CSS/JavaScript** on the frontend — no frameworks, no build step.
+## Run it
 
----
+1. Install the dependencies (one time only):
 
-## ✨ Features
+   ```
+   pip install -r requirements.txt
+   ```
 
-- 🔐 Sign up / log in (passwords hashed, session-based auth)
-- 📝 Post text, tag it, and attach an image or YouTube link
-- ❤️ Like posts, 💬 comment on them
-- 👤 User profiles with bio + stats
-- ➕ Follow / unfollow people
-- 🎯 **Discover** tab — a masonry grid ranked by how well posts match your interests (Tech, Art, Music, Travel, Food, Gaming, and more)
-- 📺 "Suggested for you" sidebar, video/image posts prioritized
-- 🎨 Warm, vibrant, custom-designed UI (no generic templates)
+2. Start the app:
 
----
+   ```
+   uvicorn main:app --reload
+   ```
 
-## 🚀 Run it locally
+3. Open **http://127.0.0.1:8000** in your browser.
 
-**1. Clone the repo**
-```bash
-git clone https://github.com/<your-username>/threadly.git
-cd threadly
-```
-*(If you downloaded the zip instead, just `cd` into the extracted `social-app` folder.)*
+That's it — the database file (`database.db`) is created automatically on first run.
 
-**2. Install the dependencies**
-```bash
-python -m pip install -r requirements.txt
-```
+## What you can do
 
-**3. Start the app**
-```bash
-python -m uvicorn main:app --reload
-```
+- Sign up / log in, and pick a few interests (Tech, Art, Travel, etc.)
+- Post something (500 char limit), optionally with tags and a pasted image or YouTube link
+- Like and comment on posts
+- Visit anyone's profile and follow/unfollow them
+- Browse the **Discover** tab — a Pinterest-style masonry grid ranked by how well each post matches your interests, with a tag filter
+- See a **"Suggested for you"** rail on the side, video/image posts prioritized
+- Edit your interests anytime from Discover ("Edit interests")
+- Browse the "People" tab to find others
 
-**4. Open it in your browser**
-That's it — no database setup needed. A `database.db` (SQLite) file is created automatically the first time you run it.
+## How the recommendations work
 
-> 💡 **Why `python -m` for both commands?** It guarantees pip installs the packages into the *same* Python environment that runs the app. If you use plain `pip install` + `uvicorn` and your machine has more than one Python installed, they can silently point to different environments and you'll get a `ModuleNotFoundError` even though the install "succeeded."
+Each post can carry up to 6 tags. Each user picks interests from the same
+fixed list. `/api/discover` scores every post by: how many of its tags match
+your interests (weighted highest), whether it has an image/video attached,
+then like count — so it behaves like a lightweight, transparent version of a
+"for you" feed. No external ML — just simple, readable ranking logic in
+`main.py` (`discover()`), easy to tweak or extend.
 
-### If `python` doesn't work, try `python3`
-```bash
-python3 -m pip install -r requirements.txt
-python3 -m uvicorn main:app --reload
-```
+## Notes
 
-### Windows PowerShell users
-```powershell
-py -m pip install -r requirements.txt
-py -m uvicorn main:app --reload
-```
-
----
-
-## 🗂️ Project structure
+- Data is stored locally in `database.db` (SQLite, git-ignored). Delete that file to reset everything.
+- Passwords are hashed before storing.
+- Everything runs from the single `uvicorn main:app --reload` command — no separate frontend server needed.
+- If you already have a `database.db` from an earlier version, it upgrades automatically on next run (new columns are added in place, no data lost).

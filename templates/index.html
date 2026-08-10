@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Threadly — a mini social feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="brand-mark">✦</span>
+      <span class="brand-name">Threadly</span>
+    </div>
+    <div class="topbar__auth" id="authArea"></div>
+  </header>
+
+  <!-- ===== Auth modal ===== -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal">
+      <div class="modal__tabs">
+        <button class="modal__tab is-active" data-tab="login">Log in</button>
+        <button class="modal__tab" data-tab="register">Sign up</button>
+        <button class="modal__close" id="closeModal">&times;</button>
+      </div>
+
+      <form id="loginForm" class="modal__form is-active">
+        <label>Username
+          <input type="text" name="username" required autocomplete="username" />
+        </label>
+        <label>Password
+          <input type="password" name="password" required autocomplete="current-password" />
+        </label>
+        <p class="modal__error" id="loginError"></p>
+        <button type="submit" class="btn btn--primary">Log in</button>
+      </form>
+
+      <form id="registerForm" class="modal__form">
+        <label>Username
+          <input type="text" name="username" required minlength="3" />
+        </label>
+        <label>Password
+          <input type="password" name="password" required minlength="4" />
+        </label>
+        <label>Bio <span class="opt">optional</span>
+          <input type="text" name="bio" maxlength="120" placeholder="Say something about yourself" />
+        </label>
+        <label>Interests <span class="opt">pick a few — shapes your Discover feed</span></label>
+        <div class="chip-picker" id="registerInterests"></div>
+        <p class="modal__error" id="registerError"></p>
+        <button type="submit" class="btn btn--primary">Create account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Edit interests modal ===== -->
+  <div class="modal-backdrop" id="interestsModal">
+    <div class="modal">
+      <div class="modal__tabs">
+        <span class="modal__title">Your interests</span>
+        <button class="modal__close" id="closeInterests">&times;</button>
+      </div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;">These shape what shows up first on Discover.</p>
+      <div class="chip-picker" id="editInterests"></div>
+      <button class="btn btn--primary" id="saveInterests" style="margin-top:16px;width:100%;">Save</button>
+    </div>
+  </div>
+
+  <!-- ===== App shell ===== -->
+  <div class="app" id="app" hidden>
+
+    <!-- Left: nav / profile summary -->
+    <aside class="sidebar">
+      <div class="me-card" id="meCard"></div>
+      <nav class="nav">
+        <button class="nav__item is-active" data-view="feed">
+          <span class="nav__dot"></span> Feed
+        </button>
+        <button class="nav__item" data-view="profile">
+          <span class="nav__dot"></span> My profile
+        </button>
+        <button class="nav__item" data-view="discover">
+          <span class="nav__dot"></span> Discover
+        </button>
+        <button class="nav__item" data-view="people">
+          <span class="nav__dot"></span> People
+        </button>
+      </nav>
+      <p class="sidebar__hint">Threadly is a tiny, cozy corner of the internet. Post something real.</p>
+    </aside>
+
+    <!-- Center: main view -->
+    <main class="main">
+
+      <!-- Feed view -->
+      <section class="view" id="view-feed">
+        <form class="composer" id="composerForm">
+          <textarea id="composerText" maxlength="500" placeholder="What's stitching through your mind?"></textarea>
+          <div class="composer__extra" id="composerExtra" hidden>
+            <input type="text" id="composerTags" placeholder="Tags — e.g. travel, food (up to 6)" maxlength="80" />
+            <input type="url" id="composerMedia" placeholder="Paste an image link or YouTube URL (optional)" maxlength="300" />
+          </div>
+          <div class="composer__row">
+            <button type="button" class="btn--icon" id="toggleExtra">+ Tags & media</button>
+            <span class="composer__count" id="composerCount">500</span>
+            <button type="submit" class="btn btn--primary">Post</button>
+          </div>
+        </form>
+
+        <div class="thread" id="feedThread">
+          <div class="thread__line"></div>
+          <div class="thread__posts" id="feedPosts"></div>
+        </div>
+      </section>
+
+      <!-- Discover view (Pinterest-style masonry, ranked by interests) -->
+      <section class="view" id="view-discover" hidden>
+        <div class="discover-head">
+          <h2 class="section-title">Discover</h2>
+          <button class="btn--icon" id="editInterestsBtn">✎ Edit interests</button>
+        </div>
+        <div class="tag-filter" id="tagFilter"></div>
+        <div class="masonry" id="discoverGrid"></div>
+      </section>
+
+      <!-- Profile view -->
+      <section class="view" id="view-profile" hidden>
+        <div class="profile-header" id="profileHeader"></div>
+        <div class="thread">
+          <div class="thread__line"></div>
+          <div class="thread__posts" id="profilePosts"></div>
+        </div>
+      </section>
+
+      <!-- People view -->
+      <section class="view" id="view-people" hidden>
+        <h2 class="section-title">People on Threadly</h2>
+        <div class="people-grid" id="peopleGrid"></div>
+      </section>
+
+    </main>
+
+    <!-- Right: suggestions rail -->
+    <aside class="rail" id="rail">
+      <h3 class="rail__title">Suggested for you</h3>
+      <div class="rail__list" id="railList"></div>
+    </aside>
+  </div>
+
+  <!-- ===== Comments modal ===== -->
+  <div class="modal-backdrop" id="commentsModal">
+    <div class="modal modal--wide">
+      <div class="modal__tabs">
+        <span class="modal__title">Comments</span>
+        <button class="modal__close" id="closeComments">&times;</button>
+      </div>
+      <div class="comments-list" id="commentsList"></div>
+      <form class="comment-form" id="commentForm">
+        <input type="text" id="commentInput" placeholder="Add a comment…" maxlength="300" />
+        <button type="submit" class="btn btn--small btn--primary">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
